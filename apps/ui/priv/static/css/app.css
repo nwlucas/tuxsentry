@@ -1,0 +1,14 @@
+body {
+  width: 100%;
+  background-color: #eee;
+}
+header nav ul {
+  display: block;
+  padding: 0;
+}
+header nav ul li {
+  display: block;
+  text-align: center;
+  padding: 0.5rem 0rem;
+  margin: 0;
+}
