@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import AppEntry from '../components/app';
 import router from './router';
-import '../styles/app.styl';
+
 
 Vue.config.productionTip = false;
 
@@ -10,6 +10,8 @@ new Vue({
   el: '#tuxUi',
   router,
   template: '<AppEntry/>',
-  components: { AppEntry },
+  components: {
+    AppEntry,
+  },
 });
 

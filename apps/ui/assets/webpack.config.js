@@ -4,7 +4,7 @@ const assetsRoot = path.resolve('../priv/static');
 const StylExtract = require('extract-text-webpack-plugin');
 
 function assetsPath(_dir) {
-  return path.posix.join( assetsRoot, _dir)
+  return path.join( assetsRoot, _dir)
 }
 
 module.exports = ( env = {}) => {
@@ -14,20 +14,20 @@ module.exports = ( env = {}) => {
 
   return {
     entry: {
-      app: './js/main.js',
+      'js/app.js': './js/main.js',
+      'css/app.css': './styles/style.scss',
     },
     output: {
       path: assetsRoot,
       publicPath: '/',
-      filename: 'js/app.js',
+      filename: '[name]',
     },
     resolve: {
       extensions: [ '.js', '.json', '.vue' ],
       alias: {
         'vue$': 'vue/dist/vue.esm.js',
         '@': path.resolve( __dirname, 'js'),
-        'jeet': 'jeet/styl/index.styl'
-      },
+       },
     },
     module: {
       rules: [
@@ -41,16 +41,19 @@ module.exports = ( env = {}) => {
           },
         },
         {
-          test: /\.styl$/,
+          test: /\.scss$/,
           loader: StylExtract.extract({
-            use: ['css-loader','stylus-loader'],
+            use: ['css-loader','sass-loader'],
           })
         },
         {
           test: /\.vue$/,
           loader: 'vue-loader',
           options: {
-
+            loaders: {
+              'scss': [ 'vue-style-loader', 'css-loader', 'sass-loader'],
+              'sass': ['vue-style-loader', 'css-loader', 'sass-loader?indentedSyntax' ]
+            }
           },
         },
         {
@@ -63,7 +66,7 @@ module.exports = ( env = {}) => {
           loader: 'url-loader',
           options: {
             limit: 10000,
-            name: assetsPath('images/[name].[hash:7].[ext]'),
+            name: 'images/[name].[ext]?[hash:7]',
           },
         },
         {
@@ -71,7 +74,7 @@ module.exports = ( env = {}) => {
           loader: 'url-loader',
           options: {
             limit: 10000,
-            name: assetsPath('fonts/[name].[hash:7].[ext]')
+            name: 'fonts/[name].[ext]'
           },
         },
       ],
@@ -83,7 +86,7 @@ module.exports = ( env = {}) => {
       }),
       new StylExtract({
         filename: 'css/app.css',
-      })
+      }),
     ],
     devtool: (() => {
       if (isProduction) return '#hidden-source-map'
