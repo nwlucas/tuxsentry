@@ -7,7 +7,6 @@
         breadcrumb.mb-0(:list="list")
         .container-fluid
           router-view
-      AppAside
     AppFooter
 </template>
 <script>

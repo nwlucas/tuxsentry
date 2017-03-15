@@ -1,10 +1,10 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-import Container from '../components/app-container';
-import Dashboard from '../components/dashboard';
-import LogsPage from '../components/logs';
-import ServicesPage from '../components/services';
+import Container from 'components/app-container';
+import DashboardPage from 'views/dashboard';
+import LogsPage from 'views/logs';
+import ServicesPage from 'views/services';
 
 Vue.use(Router);
 
@@ -21,7 +21,7 @@ export default new Router({
         {
           path: 'dashboard',
           name: 'Dashboard',
-          component: Dashboard,
+          component: DashboardPage,
         },
         {
           path: 'services',

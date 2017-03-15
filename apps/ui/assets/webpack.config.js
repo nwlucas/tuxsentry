@@ -24,8 +24,14 @@ module.exports = ( env = {}) => {
     },
     resolve: {
       extensions: [ '.js', '.json', '.vue' ],
+      modules: [
+        path.resolve('js'),
+        path.resolve('node_modules')
+      ],
       alias: {
         'vue$': 'vue/dist/vue.esm.js',
+        'components': path.resolve('components'),
+        'views': path.resolve('views'),
         '@': path.resolve( __dirname, 'js'),
        },
     },
