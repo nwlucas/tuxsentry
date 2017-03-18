@@ -1,4 +1,5 @@
 defmodule Facts.CPU.TimesStat do
+  @derive [Poison.Encoder]
   defstruct [
     :cpu,
     :user,

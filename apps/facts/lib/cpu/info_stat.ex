@@ -1,4 +1,5 @@
 defmodule Facts.CPU.InfoStat do
+  @derive [Poison.Encoder]
 #  @type t :: %TuxSentry.Facts.CPU.InfoStat{cpu: integer, vendor_id: binary, family: binary, model: binary,
 #    stepping: integer, physical_id: binary, core_id: binary, cores: integer, model_name: float, mhz: float,
 #     cache_size: integer, flags: list, microcode: binary}
@@ -17,4 +18,5 @@ defmodule Facts.CPU.InfoStat do
     :flags,
     :microcode
   ]
+
 end

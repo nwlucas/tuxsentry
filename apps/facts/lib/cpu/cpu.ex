@@ -1,26 +1,33 @@
 defmodule Facts.CPU do
+    import Facts.Utils
 
-  import Facts.Utils
+    def info do
+    filename = host_proc("cpuinfo")
+    file = File.open!(filename)
+    data = IO.binstream(file, :line)
+       |> Enum.map(fn(x) -> Regex.replace(~r/(\t|\n)+/, x, "") end)
+       |> Enum.map(fn(x) -> sanitize_data(x) end)
+       |> parse_list
 
-  def info do
-    host_proc("cpuinfo")
-    |> read_file()
-    |> process_info()
 
-  end
+    IO.puts "Length #{length(data)}"
+    IO.inspect data
 
-  def process_info(a) when is_tuple(a) do
-    {_, data} = a
+    File.close(file)
+    end
 
-    Regex.replace(~r/\t+/, data, "")
-    |> String.split("\n", trim: true)
-    |> Enum.map( fn(item) ->String.split(item, ":", trim: true) end)
-    |> generate_struct
-  end
+    def sanitize_data("" = data) when is_binary(data), do: ""
+    def sanitize_data(data) when is_binary(data) do
+        [k,v] = String.split(data, ":", trim: true)
+        Map.put(%{}, k, v )
+    end
 
-  def generate_struct(data) when is_list(data) do
-
-  end
+    def parse_list(item, m \\ %{})
+    def parse_list([], m ), do: m
+    def parse_list(["" = _item | tail], m), do: parse_list(tail, m)
+    def parse_list([item | tail], m) when is_map(item) do
+        case m do
+          %{} -> parse_list(tail, )
+        end
+    end
 end
-
-

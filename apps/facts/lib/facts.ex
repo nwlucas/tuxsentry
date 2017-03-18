@@ -9,8 +9,13 @@ defmodule Facts do
   `get_facts/0` is the intended to be the primary entry point to the `Facts` module.
   """
   def get_facts do
-    {:ok, s} = System.get_system_facts()
-    {:ok, e} = External.get_external_facts()
-
+    case System.get_system_facts do
+      {:ok, s} -> IO.puts s
+      {:error, _} -> raise "Error"
+    end
+    case External.get_external_facts do
+      {:ok, e} -> IO.puts e
+      {:error, _} -> raise "Error"
+    end
   end
 end
