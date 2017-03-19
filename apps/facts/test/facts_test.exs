@@ -1,6 +1,6 @@
-defmodule TuxSentry.FactsTest do
+defmodule FactsTest do
   use ExUnit.Case
-  doctest TuxSentry.Facts
+  doctest Facts
 
   test "the truth" do
     assert 1 + 1 == 2

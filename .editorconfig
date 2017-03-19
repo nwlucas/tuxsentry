@@ -50,3 +50,6 @@ indent_size = 2
 
 [Makefile]
 indent_style = tab
+
+[*.{ex,eex}]
+indent_size = 2

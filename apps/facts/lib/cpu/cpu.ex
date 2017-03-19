@@ -1,33 +1,38 @@
 defmodule Facts.CPU do
-    import Facts.Utils
+  @moduledoc """
 
-    def info do
-    filename = host_proc("cpuinfo")
-    file = File.open!(filename)
-    data = IO.binstream(file, :line)
-       |> Enum.map(fn(x) -> Regex.replace(~r/(\t|\n)+/, x, "") end)
-       |> Enum.map(fn(x) -> sanitize_data(x) end)
-       |> parse_list
+  `Facts.CPU` handles all logic with regards to collecting metrics on the CPUs of the host.
 
+  """
+  import Facts.Utils
+  alias Facts.CPU.{InfoStat, TimeStat}
 
-    IO.puts "Length #{length(data)}"
-    IO.inspect data
+  def count do
 
-    File.close(file)
-    end
+  end
 
-    def sanitize_data("" = data) when is_binary(data), do: ""
-    def sanitize_data(data) when is_binary(data) do
-        [k,v] = String.split(data, ":", trim: true)
-        Map.put(%{}, k, v )
-    end
+  def info do
+  filename = host_proc("cpuinfo")
+  file = File.open!(filename)
+  data = IO.binstream(file, :line)
+    |> Enum.map(& sanitize_data(&1) )
+    |> Enum.map(& normalize_with_underscore(&1) )
+    |> delete_all(%{})
+    |> Enum.chunk(27)
+    |> Enum.map(& flatten_info(&1))
+  File.close(file)
+  data
+  end
 
-    def parse_list(item, m \\ %{})
-    def parse_list([], m ), do: m
-    def parse_list(["" = _item | tail], m), do: parse_list(tail, m)
-    def parse_list([item | tail], m) when is_map(item) do
-        case m do
-          %{} -> parse_list(tail, )
-        end
-    end
+  defp flatten_info(list, m \\ %{})
+  defp flatten_info([], m), do: m
+  defp flatten_info(list, m), do: flatten_info(tl(list), Map.merge(m, hd(list)))
+
+  defp populate_info([head | tail]) do
+
+  end
+
+#    defp populate_time(data) when is_list(data) do
+#
+#    end
 end

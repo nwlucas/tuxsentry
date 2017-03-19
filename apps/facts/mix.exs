@@ -15,10 +15,11 @@ defmodule Facts.Mixfile do
   end
 
   def application do
-    [extra_applications: [:logger]]
+    [extra_applications: [:logger, :porcelain]]
   end
 
   defp deps do
-    [{:poison, "~> 3.0"}]
+    [ {:poison, "~> 3.0"},
+      {:porcelain, "~> 2.0"}]
   end
 end
