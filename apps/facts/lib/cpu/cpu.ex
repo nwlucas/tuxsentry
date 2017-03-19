@@ -20,6 +20,7 @@ defmodule Facts.CPU do
     |> delete_all(%{})
     |> Enum.chunk(27)
     |> Enum.map(& flatten_info(&1))
+    |> Enum.map(& populate_info(&1))
   File.close(file)
   data
   end
@@ -28,8 +29,16 @@ defmodule Facts.CPU do
   defp flatten_info([], m), do: m
   defp flatten_info(list, m), do: flatten_info(tl(list), Map.merge(m, hd(list)))
 
-  defp populate_info([head | tail]) do
-
+  defp populate_info(data) when is_map(data) do
+    cd =  for {key, val} <- data, into: %{} do
+            v = String.trim(val)
+            case key do
+              "processor" -> {String.to_atom("cpu"), String.to_integer(v)}
+              "flags" -> {String.to_atom("flags"), String.split(v)}
+              _ -> {String.to_atom(String.trim_leading(key, "cpu_")), v}
+            end
+          end
+    struct(InfoStat, cd)
   end
 
 #    defp populate_time(data) when is_list(data) do
