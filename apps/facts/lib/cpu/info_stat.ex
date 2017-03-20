@@ -1,4 +1,14 @@
 defmodule Facts.CPU.InfoStat do
+  @moduledoc """
+    Provides a struct to hold CPU data.
+
+    ##Examples
+
+      iex> d = %InfoStat{cpu: 0, model_name: "AuthenticAMD"}
+      ...> d.model_name
+      "AuthenticAMD"
+
+  """
   @derive [Poison.Encoder]
 
   @type t :: %Facts.CPU.InfoStat{
