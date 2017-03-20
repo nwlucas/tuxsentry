@@ -6,6 +6,13 @@ defmodule TuxSentry.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
+     test_coverage: [tool: ExCoveralls],
+     preferred_cli_env: [
+      "coveralls": :test,
+      "coveralls.detail": :test,
+      "coveralls.post": :test,
+      "coveralls.html": :test
+      ],
      dialyzer: [
       plt_add_deps: :transitive,
       paths: [
@@ -18,6 +25,9 @@ defmodule TuxSentry.Mixfile do
   end
 
   defp deps do
-    [{:dialyxir, "~> 0.5.0", only: [:dev]}]
+    [
+      {:dialyxir, "~> 0.5.0", only: [:dev]},
+      {:excoveralls, "~> 0.6", only: :test}
+    ]
   end
 end
