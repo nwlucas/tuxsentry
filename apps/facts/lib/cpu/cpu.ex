@@ -24,16 +24,29 @@ defmodule Facts.CPU do
      data = IO.binstream(file, :line)
          |> Enum.map(& sanitize_data(&1) )
          |> Enum.map(& normalize_with_underscore(&1) )
-         |> delete_all(%{})
-         |> Enum.chunk(27)
-         |> Enum.map(& flatten_info(&1))
          |> Enum.map(& finish_info(&1))
+         |> delete_all(%{})
+         |> split_data()
+         |> Enum.map(& flatten_info(&1))
          |> Enum.map(& populate_info(&1))
      data
-    catch _ -> "Oops, somethinh went wrong."
+    catch _ -> "Oops, something went wrong."
     after
       File.close(file)
     end
+  end
+  @spec split_data(original :: list) :: list
+  defp split_data(data) do
+    i = Enum.with_index(data)
+      |> Enum.filter_map(fn {m, _} -> Map.has_key?(m, :processor) end , fn {_, i} -> i end )
+
+    interval = hd(tl(i)) - hd(i)
+    split_data(data, interval)
+  end
+
+  @spec split_data(original :: list, interval :: integer) :: list
+  defp split_data(data, i) do
+    Enum.chunk(data, i)
   end
 
   @spec flatten_info(list, map) :: map
