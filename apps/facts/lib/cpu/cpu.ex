@@ -7,9 +7,13 @@ defmodule Facts.CPU do
   import Facts.Utils
   alias Facts.CPU.{InfoStat, TimeStat}
 
-  @spec count :: integer
-  def count do
-
+  @spec counts :: integer
+  def counts do
+   case System.cmd "nproc", [] do
+     {k, 0} ->
+        String.to_integer(String.replace(k, "\n", ""))
+     {_, _} -> 0
+   end
   end
 
   @spec info :: list
