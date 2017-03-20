@@ -12,24 +12,28 @@ defmodule Facts.CPU do
    case System.cmd "nproc", [] do
      {k, 0} ->
         String.to_integer(String.replace(k, "\n", ""))
-     {_, _} -> 0
+     {_, _} -> raise "Unable to determine the CPU count"
    end
   end
 
   @spec info :: list
   def info do
-  filename = host_proc("cpuinfo")
-  file = File.open!(filename)
-  data = IO.binstream(file, :line)
-    |> Enum.map(& sanitize_data(&1) )
-    |> Enum.map(& normalize_with_underscore(&1) )
-    |> delete_all(%{})
-    |> Enum.chunk(27)
-    |> Enum.map(& flatten_info(&1))
-    |> Enum.map(& finish_info(&1))
-    |> Enum.map(& populate_info(&1))
-  File.close(file)
-  data
+    filename = host_proc("cpuinfo")
+    file = File.open!(filename)
+    try do
+     data = IO.binstream(file, :line)
+         |> Enum.map(& sanitize_data(&1) )
+         |> Enum.map(& normalize_with_underscore(&1) )
+         |> delete_all(%{})
+         |> Enum.chunk(27)
+         |> Enum.map(& flatten_info(&1))
+         |> Enum.map(& finish_info(&1))
+         |> Enum.map(& populate_info(&1))
+     data
+    catch _ -> "Oops, somethinh went wrong."
+    after
+      File.close(file)
+    end
   end
 
   @spec flatten_info(list, map) :: map
@@ -44,7 +48,7 @@ defmodule Facts.CPU do
     end
   end
 
-  @spec populate_info(map) :: %Facts.CPU.InfoStat{}
+  @spec populate_info(map) :: %InfoStat{}
   defp populate_info(data) when is_map(data) do
     cd =  for {key, val} <- data, into: %{} do
             case key do
