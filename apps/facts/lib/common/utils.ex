@@ -4,8 +4,10 @@ defmodule Facts.Utils do
   `Facts.Utils` contains common logic that is used mostly internally by other modules.
 
   """
-
+  @spec host_proc :: binary
   def host_proc, do: Path.absname("/proc")
+
+  @spec host_proc(binary) :: binary
   def host_proc(combine_with)  when is_binary(combine_with) do
     if is_nil(System.get_env("HOST_PROC")) do
       Path.join("/proc", combine_with)
@@ -14,7 +16,10 @@ defmodule Facts.Utils do
     end
   end
 
+  @spec host_sys :: binary
   def host_sys, do: Path.absname("/sys")
+
+  @spec host_sys(binary) :: binary
   def host_sys(combine_with)  when is_binary(combine_with) do
     if is_nil(System.get_env("HOST_SYS")) do
       Path.join("/sys", combine_with)
@@ -23,7 +28,10 @@ defmodule Facts.Utils do
     end
   end
 
+  @spec host_etc :: binary
   def host_etc, do: Path.absname("/etc")
+
+  @spec host_etc(binary) :: binary
   def host_etc(combine_with)  when is_binary(combine_with) do
     if is_nil(System.get_env("HOST_ETC")) do
       Path.join("/etc", combine_with)
@@ -32,6 +40,7 @@ defmodule Facts.Utils do
     end
   end
 
+  @spec read_file(binary) :: list
   def read_file(filename) do
     with {:ok, file} <- File.open(filename),
       data = IO.binread(file, :all),
@@ -39,14 +48,16 @@ defmodule Facts.Utils do
       do: data
   end
 
+  @spec sanitize_data(binary) :: any
   def sanitize_data("" = data) when is_binary(data), do: ""
-  def sanitize_data("\n" = data) when is_binary(data), do: ""
+  def sanitize_data("\n" = newline) when is_binary(newline), do: ""
   def sanitize_data(data) when is_binary(data) do
     [k,v] = Regex.replace(~r/(\t|\n)+/, data, "")
       |> String.split(":", trim: true)
     Map.put(%{}, k, v )
   end
 
+  @spec normalize_with_underscore(map) :: map
   def normalize_with_underscore(item) when is_map(item) do
     k = Map.keys(item)
       |> Enum.map(fn(x) -> String.trim(x) |> String.downcase |> String.replace(~r/\s+/,"_") end)
@@ -55,6 +66,7 @@ defmodule Facts.Utils do
     Map.new([{k, hd(Map.values(item))}])
   end
 
+  @spec normalize_with_underscore(tuple) :: tuple
   def normalize_with_underscore(item) when is_tuple(item) do
     k = elem(item, 0)
       |> String.trim
@@ -64,8 +76,10 @@ defmodule Facts.Utils do
     {k, elem(item,1)}
   end
 
+  @spec normalize_with_underscore(binary) :: map
   def normalize_with_underscore("" = item) when is_binary(item), do: %{}
 
+  @spec delete_all(list, any) :: list
   def delete_all(list, value) do
     Enum.filter(list, & &1 !== value)
   end

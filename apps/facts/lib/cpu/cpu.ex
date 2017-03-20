@@ -7,10 +7,12 @@ defmodule Facts.CPU do
   import Facts.Utils
   alias Facts.CPU.{InfoStat, TimeStat}
 
+  @spec count :: integer
   def count do
 
   end
 
+  @spec info :: list
   def info do
   filename = host_proc("cpuinfo")
   file = File.open!(filename)
@@ -26,16 +28,19 @@ defmodule Facts.CPU do
   data
   end
 
+  @spec flatten_info(list, map) :: map
   defp flatten_info(list, m \\ %{})
   defp flatten_info([], m), do: m
   defp flatten_info(list, m), do: flatten_info(tl(list), Map.merge(m, hd(list)))
 
+  @spec finish_info(map) :: map
   defp finish_info(data) when is_map(data) do
     for {key, val} <- data, into: %{} do
       {String.to_atom(String.trim_leading(key, "cpu_")),  String.trim(val)}
     end
   end
 
+  @spec populate_info(map) :: %Facts.CPU.InfoStat{}
   defp populate_info(data) when is_map(data) do
     cd =  for {key, val} <- data, into: %{} do
             case key do
