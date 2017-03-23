@@ -5,9 +5,10 @@ defmodule Facts.Disk do
 
   def partitions(all \\ false) do
     filename = host_etc("mtab")
+    lines = read_file(filename) |> String.split("\n")
   end
 
   defp get_file_systems() do
-    
+
   end
 end
