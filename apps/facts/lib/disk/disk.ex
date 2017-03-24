@@ -7,6 +7,7 @@ defmodule Facts.Disk do
   `Facts.Disk.partitions/1` reads the disk information from the host, cleans up the data a bit and returns a list
   with the info. Depending on the value of all it will return all disks if true, or only physical disks if false.
   """
+  @spec partitions(boolean) :: list
   def partitions(all \\ false) do
     filename = host_etc("mtab")
     lines = read_file(filename)
