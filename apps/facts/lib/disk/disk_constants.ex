@@ -1,6 +1,8 @@
 defmodule Facts.Disk.Constants do
   use Facts.Constants
 
+  const :sector_size, 512
+
   const :adfs_super_magic,            [0xadf5, "adfs"]
   const :affs_super_magic,            [0xADFF,"affs"]
   const :afs_super_magic,             [0x5346414F,"afs"]
