@@ -7,7 +7,6 @@ defmodule Facts.CPU.InfoStat do
       iex> d = %InfoStat{cpu: 0, model_name: "AuthenticAMD"}
       ...> d.model_name
       "AuthenticAMD"
-
   """
   @derive [Poison.Encoder]
 
