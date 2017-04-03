@@ -4,8 +4,9 @@ defmodule Facts.CPU do
   `Facts.CPU` handles all logic with regards to collecting metrics on the CPUs of the host.
 
   """
-  import Facts.Utils
   alias Facts.CPU.{InfoStat, TimeStat}
+  import Facts.Utils
+  require Logger
 
   @spec counts :: integer
   def counts do
@@ -21,7 +22,7 @@ defmodule Facts.CPU do
     filename = host_proc("cpuinfo")
     file = File.open!(filename)
     try do
-     data = IO.binstream(file, :line)
+      data = IO.binstream(file, :line)
          |> Enum.map(& sanitize_data(&1) )
          |> Enum.map(& normalize_with_underscore(&1) )
          |> Enum.map(& finish_info(&1))
@@ -29,12 +30,16 @@ defmodule Facts.CPU do
          |> split_data()
          |> Enum.map(& flatten_info(&1))
          |> Enum.map(& populate_info(&1))
-     data
-    catch _ -> "Oops, something went wrong."
+
+     {:ok, data}
+   rescue
+     e -> Logger.error "Error occured: " <> e
+          {:error, e}
     after
       File.close(file)
     end
   end
+
   @spec split_data(original :: list) :: list
   defp split_data(data) do
     i = Enum.with_index(data)
@@ -61,7 +66,7 @@ defmodule Facts.CPU do
     end
   end
 
-  @spec populate_info(map) :: %InfoStat{}
+  @spec populate_info(map) :: %Facts.CPU.InfoStat{}
   defp populate_info(data) when is_map(data) do
     cd =  for {key, val} <- data, into: %{} do
             case key do

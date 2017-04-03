@@ -26,6 +26,7 @@ defmodule TuxSentry.Mixfile do
 
   defp deps do
     [
+      {:distillery, "~> 1.0"},
       {:dialyxir, "~> 0.5.0", only: [:dev]},
       {:excoveralls, "~> 0.6", only: :test}
     ]
