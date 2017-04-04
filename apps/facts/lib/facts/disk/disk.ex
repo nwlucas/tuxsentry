@@ -1,7 +1,7 @@
 defmodule Facts.Disk do
   @moduledoc """
   """
-  alias Facts.Disk.Constants, as: DC
+  alias Facts.Disk.PartitionStat
   import Facts.Utils
   require Facts.Disk.Constants
   require Logger
@@ -16,7 +16,7 @@ defmodule Facts.Disk do
     try do
       p = read_mtab()
         |> get_file_systems(all)
-        |> generate_list()
+        |> Enum.map(& generate_list(&1))
 
       {:ok, p}
     rescue
@@ -56,7 +56,12 @@ defmodule Facts.Disk do
 
   @spec generate_list(data :: list) :: list(%Facts.Disk.PartitionStat{})
   defp generate_list(data) do
-    data
+    p = %PartitionStat{
+      device: Enum.fetch!(data, 0),
+      mount_point: Enum.fetch!(data, 1),
+      fs_type: Enum.fetch!(data, 2),
+      opts: Enum.fetch!(data, 3)
+    }
   end
 #  @spec get_fs_type :: listy
 #  defp get_fs_type() do
