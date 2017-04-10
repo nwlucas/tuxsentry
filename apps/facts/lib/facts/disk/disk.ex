@@ -10,7 +10,7 @@ defmodule Facts.Disk do
   `Facts.Disk.partitions/1` reads the disk information from the host, cleans up the data a bit and returns a list
   with the info. Depending on the value of all it will return all disks if true, or only physical disks if false.
   """
-  @spec partitions(boolean) :: list(%Facts.Disk.PartitionStat{})
+  @spec partitions(boolean) :: tuple
   def partitions(all \\ true) do
 
     try do
@@ -54,9 +54,9 @@ defmodule Facts.Disk do
     data
   end
 
-  @spec generate_list(data :: list) :: list(%Facts.Disk.PartitionStat{})
+  @spec generate_list(data :: list) :: %Facts.Disk.PartitionStat{}
   defp generate_list(data) do
-    p = %PartitionStat{
+    %PartitionStat{
       device: Enum.fetch!(data, 0),
       mount_point: Enum.fetch!(data, 1),
       fs_type: Enum.fetch!(data, 2),

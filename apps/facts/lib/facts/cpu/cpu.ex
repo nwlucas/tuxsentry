@@ -17,7 +17,7 @@ defmodule Facts.CPU do
    end
   end
 
-  @spec info :: list
+  @spec info :: tuple
   def info do
     filename = host_proc("cpuinfo")
     file = File.open!(filename)
@@ -34,7 +34,7 @@ defmodule Facts.CPU do
      {:ok, data}
    rescue
      e -> Logger.error "Error occured: " <> e
-          {:error, e}
+     {:error, e}
     after
       File.close(file)
     end
