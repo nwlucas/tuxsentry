@@ -40,12 +40,24 @@ defmodule Facts.Utils do
     end
   end
 
-  @spec read_file(binary) :: list
-  def read_file(filename) do
-    with {:ok, file} <- File.open(filename),
-      data = IO.binread(file, :all),
-      :ok <- File.close(file),
-      do: data
+  @spec read_file(binary, list) :: list
+  def read_file(filename, options \\ []) do
+    defaults = [sane: false]
+    opts = Keyword.merge(defaults, options)
+
+    unfiltered =
+      with {:ok, file} <- File.open(filename),
+        data = IO.binread(file, :all),
+        :ok <- File.close(file),
+        do: data
+
+    filtered =
+      case opts[:sane] do
+        true -> String.split(unfiltered, "\n") |> Enum.filter(& !(String.length(&1) == 0))
+        _ -> unfiltered
+      end
+
+    filtered
   end
 
   @spec sanitize_data(binary) :: any
