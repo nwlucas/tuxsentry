@@ -7,6 +7,7 @@ defmodule Facts.Host do
   def info do
     b = boot_time()
     { platform, version } = platform_info()
+    { system, role } = virtualization()
 
     %Facts.Host.InfoStat{
       hostname: hostname(),
@@ -16,7 +17,9 @@ defmodule Facts.Host do
       platform: platform,
       platform_family: get_family(platform),
       platform_version: version,
-      kernel_version: kernel_version()
+      kernel_version: kernel_version(),
+      virtualizatioon_system: system,
+      virtualization_role: role
     }
   end
 
@@ -81,12 +84,12 @@ defmodule Facts.Host do
         File.exists?(host_etc("oracle-release")) ->
           platform = "oracle"
           contents = read_file(host_etc("oracle-release"))
-          version = get_version(contents, type: "redhat")
+          version = get_version(contents)
           {platform, version}
         File.exists?(host_etc("enterprise-release")) ->
           platform = "oracle"
           contents = read_file(host_etc("enterprise-release"))
-          version = get_version(contents, type: "redhat")
+          version = get_version(contents)
           {platform, version}
         File.exists?(host_etc("debian_version")) ->
           case lsb.id do
@@ -109,18 +112,18 @@ defmodule Facts.Host do
           end
         File.exists?(host_etc("redhat-release")) ->
           contents = Facts.Utils.read_file(host_etc("redhat-release"), sane: false)
-          version = get_version(contents, type: "redhat")
-          platform = get_platform(contents, type: "redhat")
+          version = get_version(contents)
+          platform = get_platform(contents)
           {platform, version}
         File.exists?(host_etc("system-release")) ->
           contents = Facts.Utils.read_file(host_etc("system-release"), sane: false)
-          version = get_version(contents, type: "redhat")
-          platform = get_platform(contents, type: "redhat")
+          version = get_version(contents)
+          platform = get_platform(contents)
           {platform, version}
         File.exists?(host_etc("gentoo-release")) ->
           platform = "gentoo"
           contents = Facts.Utils.read_file(host_etc("gentoo-release"), sane: false)
-          version = get_version(contents, type: "redhat")
+          version = get_version(contents)
           {platform, version}
         File.exists?(host_etc("SuSE-release")) ->
           contents = Facts.Utils.read_file(host_etc("SuSE-release"), sane: false)
@@ -136,9 +139,7 @@ defmodule Facts.Host do
           contents = read_file(host_etc("alpine-release"))
           version = hd(contents)
           {platform, version}
-        File.exists?(host_etc("os-release")) ->
-          [ID: platform, VERSION_ID: version] = get_os_release()
-          {platform, version}
+        File.exists?(host_etc("os-release")) -> get_os_release()
         lsb.id == "ScienticficSL" -> { "scientific", lsb.release }
         lsb.id != "" -> { String.downcase(lsb.id), lsb.release }
       end
@@ -148,7 +149,7 @@ defmodule Facts.Host do
     end
   end
 
-  @spec get_os_release() :: {:ID, String.t} | []
+  @spec get_os_release() :: {String.t, String.t}
   defp get_os_release() do
     filename = host_etc("os-release")
 
@@ -156,11 +157,12 @@ defmodule Facts.Host do
       rel = read_file(filename)
             |> Enum.map(& String.replace(&1, "\"", ""))
             |> Enum.map(& String.split(&1, "="))
-            |> Enum.map(fn (x) -> {String.to_atom(hd(x)), Enum.fetch!(tl(x), 0)} end )
-      rel
+            |> Enum.map(fn (x) -> {String.to_atom(String.downcase(hd(x))), Enum.fetch!(tl(x), 0)} end )
+
+      { rel[:id], rel[:version] }
     rescue
       e -> Logger.error "Error occured: " <> e
-      []
+      {"", ""}
     end
   end
 
@@ -217,7 +219,7 @@ defmodule Facts.Host do
     end
   end
 
-  @spec kernel_version :: binary
+  @spec kernel_version :: String.t
   defp kernel_version() do
     filename = host_proc("/sys/kernel/osrelease")
     contents = if File.exists?(filename), do: hd(read_file(filename)), else: ""
@@ -225,15 +227,10 @@ defmodule Facts.Host do
     contents
   end
 
-  defp virtualization() do
-      xen_file = host_proc("xen")
-      modules_file = host_proc("modules")
-      cpu_file = host_proc("cpuinfo")
-  end
-
   @type option :: {:type, binary}
   @spec get_version(binary, options :: [option]) :: binary
-  defp get_version(data, opts \\ []) do
+  defp get_version(data, opts \\ [type: "redhat"]) do
+
     redhat_regex = ~r/release (?<version>\d[\d.]*)/
     suse_v_regex = ~r/VERSION = (?<version>[\d.]+)/
     suse_p_regex = ~r/PATCHLEVEL = (?<patch>[\d.]+)/
@@ -252,7 +249,7 @@ defmodule Facts.Host do
   end
 
   @spec get_platform(binary, options :: [option]) :: binary
-  defp get_platform(data, opts \\ []) do
+  defp get_platform(data, opts \\ [type: "redhat"]) do
     data = String.downcase(data)
     platform = case opts[:type] do
       "redhat" -> if String.contains?(data, "red hat"), do: "redhat", else: String.splitter(data, [" "], trim: true) |> Enum.take(1)
@@ -276,6 +273,67 @@ defmodule Facts.Host do
       dist when dist in ["alpine"] -> "alpine"
       dist when dist in ["coreos"] -> "coreos"
       _ -> "Undetermined"
+    end
+  end
+
+  defp virtualization() do
+    xen_file = host_proc("xen")
+    modules_file = host_proc("modules")
+    cpu_file = host_proc("cpuinfo")
+    bc_file = host_proc("/bc/0")
+    vz_file = host_proc("/vz")
+    status_file = host_proc("/self/status")
+    cgroup_file = host_proc("/self/cgroup")
+    os_file = host_etc("os-release")
+
+    cond do
+      File.exists?(xen_file) ->
+        role =
+          if File.exists?(xen_file <> "/capabilities") do
+            contents = Facts.Utils.read_file( xen_file <> "/capabilities", sane: false)
+            case String.contains?(contents, "control_d") do
+              true -> "host"
+              _ -> "guest"
+            end
+          else
+            "guest"
+          end
+
+        {"xen", role}
+
+      File.exists?(modules_file) ->
+        contents = Facts.Utils.read_file(modules_file, sane: false)
+        cond do
+          String.contains?(contents, "kvm") -> { "kvm", "host" }
+          String.contains?(contents, "vboxdrv") -> { "vbox", "host" }
+          String.contains?(contents, "vboxguest") -> { "vbox", "guest" }
+        end
+
+      File.exists?(cpu_file) ->
+        contents = Facts.Utils.read_file(cpu_file, sane: false)
+        if String.contains?(contents, ["QEMU Virtual CPU", "Common KVM processor", "Common 32-bit KVM processor"] ) do
+          { "kvm", "guest"}
+        end
+      File.exists?(bc_file) -> { "openvz", "host"}
+      File.exists?(vz_file) -> { "openvz", "guest"}
+      File.exists?(status_file ) ->
+        contents = Facts.Utils.read_file(status_file, sane: false)
+        if String.contains?(contents, ["s_context:", "VxID:"]), do: {"linux-server", ""}
+      File.exists?(cgroup_file) ->
+        contents = Facts.Utils.read_file(cgroup_file, sane: false)
+        cond do
+          String.contains?(contents, "lxc") -> { "lxc", "guest" }
+          String.contains?(contents, "docker") -> { "docker", "guest" }
+          String.contains?(contents, "machine-rkt") -> { "rkt", "guest" }
+        end
+      File.exists?("/usr/bin/lxc-version") -> { "lxc", "host"}
+      File.exists?(os_file) ->
+        { platform, _} = get_os_release()
+        case platform do
+          "coreos" -> { "rkt", "host" }
+          _ -> {"undertermined", "undertermined"}
+        end
+      true -> {"undertermined", "undertermined"}
     end
   end
 end
