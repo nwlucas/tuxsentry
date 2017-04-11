@@ -276,6 +276,7 @@ defmodule Facts.Host do
     end
   end
 
+  @spec virtualization :: { String.t, String.t }
   defp virtualization() do
     xen_file = host_proc("xen")
     modules_file = host_proc("modules")
