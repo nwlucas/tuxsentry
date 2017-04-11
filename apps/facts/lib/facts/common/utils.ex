@@ -40,7 +40,8 @@ defmodule Facts.Utils do
     end
   end
 
-  @spec read_file(binary, list) :: list
+  @type option :: {:sane, boolean}
+  @spec read_file(binary, options :: [option]) :: [binary]
   def read_file(filename, options \\ []) do
     defaults = [sane: false]
     opts = Keyword.merge(defaults, options)

@@ -108,22 +108,22 @@ defmodule Facts.Host do
               contents = read_file(host_etc("debian_version"))
           end
         File.exists?(host_etc("redhat-release")) ->
-          contents = Fact.Utils.read_file(host_etc("redhat-release"), sane: false)
+          contents = Facts.Utils.read_file(host_etc("redhat-release"), sane: false)
           version = get_version(contents, type: "redhat")
           platform = get_platform(contents, type: "redhat")
           {platform, version}
         File.exists?(host_etc("system-release")) ->
-          contents = Fact.Utils.read_file(host_etc("system-release"), sane: false)
+          contents = Facts.Utils.read_file(host_etc("system-release"), sane: false)
           version = get_version(contents, type: "redhat")
           platform = get_platform(contents, type: "redhat")
           {platform, version}
         File.exists?(host_etc("gentoo-release")) ->
           platform = "gentoo"
-          contents = Fact.Utils.read_file(host_etc("gentoo-release"), sane: false)
+          contents = Facts.Utils.read_file(host_etc("gentoo-release"), sane: false)
           version = get_version(contents, type: "redhat")
           {platform, version}
         File.exists?(host_etc("SuSE-release")) ->
-          contents = Fact.Utils.read_file(host_etc("SuSE-release"), sane: false)
+          contents = Facts.Utils.read_file(host_etc("SuSE-release"), sane: false)
           version = get_version(contents, type: "suse")
           platform = get_platform(contents, type: "suse")
           {platform, version}
@@ -148,7 +148,7 @@ defmodule Facts.Host do
     end
   end
 
-  @spec get_os_release() :: list
+  @spec get_os_release() :: {:ID, String.t} | []
   defp get_os_release() do
     filename = host_etc("os-release")
 
@@ -231,7 +231,8 @@ defmodule Facts.Host do
       cpu_file = host_proc("cpuinfo")
   end
 
-  @spec get_version(binary, list) :: binary
+  @type option :: {:type, binary}
+  @spec get_version(binary, options :: [option]) :: binary
   defp get_version(data, opts \\ []) do
     redhat_regex = ~r/release (?<version>\d[\d.]*)/
     suse_v_regex = ~r/VERSION = (?<version>[\d.]+)/
@@ -239,28 +240,29 @@ defmodule Facts.Host do
 
     data = String.downcase(data)
 
-    filtered = case opts.type do
+    filtered = case opts[:type] do
       "redhat" -> Regex.named_captures(redhat_regex, data)
       "suse" ->
         s = Regex.named_captures(suse_v_regex, data)
         if is_nil(s), do: Regex.named_captures(suse_p_regex, data)
     end
 
-    if Map.has_key?(filtered, "version"), do: Map.fetch!(filtered, "version"), else: Map.fetch!(filtered, "patch")
+    version = if Map.has_key?(filtered, "version"), do: Map.fetch!(filtered, "version"), else: Map.fetch!(filtered, "patch")
+    version
   end
 
-  @spec get_platform(binary, list) :: binary
+  @spec get_platform(binary, options :: [option]) :: binary
   defp get_platform(data, opts \\ []) do
-    platform = case opts.type do
-      "redhat" ->
-        "redhat_platform"
-      "suse" ->
-        "suse_platform"
+    data = String.downcase(data)
+    platform = case opts[:type] do
+      "redhat" -> if String.contains?(data, "red hat"), do: "redhat", else: String.splitter(data, [" "], trim: true) |> Enum.take(1)
+      "suse" -> if String.contains?(data, "opensuse"), do: "opensuse", else: "suse"
     end
 
+    platform
   end
 
-  @spec get_family(binary) :: binary
+  @spec get_family(String.t) :: String.t
   defp get_family(p) do
     case p do
       dist when dist in ["debian", "ubuntu", "linuxmint", "raspbian"] -> "debian"
