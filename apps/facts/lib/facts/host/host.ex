@@ -15,7 +15,8 @@ defmodule Facts.Host do
       procs: counts(),
       platform: platform,
       platform_family: get_family(platform),
-      platform_version: version
+      platform_version: version,
+      kernel_version: kernel_version()
     }
   end
 
@@ -28,7 +29,6 @@ defmodule Facts.Host do
   defp read_file(filename) do
     Facts.Utils.read_file(filename, sane: true)
   end
-
 
   @spec counts :: integer
   defp counts do
@@ -44,7 +44,9 @@ defmodule Facts.Host do
    case System.cmd "hostname", [] do
      {k, 0} ->
         String.replace(k, "\n", "")
-     {_, _} -> raise "Unable to determine the Hostname"
+     {_, _} ->
+        Logger.error "Unable to determine the Hostname"
+        "Undetermined"
    end
   end
 
@@ -106,22 +108,22 @@ defmodule Facts.Host do
               contents = read_file(host_etc("debian_version"))
           end
         File.exists?(host_etc("redhat-release")) ->
-          contents = read_file(host_etc("redhat-release"))
+          contents = Fact.Utils.read_file(host_etc("redhat-release"), sane: false)
           version = get_version(contents, type: "redhat")
           platform = get_platform(contents, type: "redhat")
           {platform, version}
         File.exists?(host_etc("system-release")) ->
-          contents = read_file(host_etc("system-release"))
+          contents = Fact.Utils.read_file(host_etc("system-release"), sane: false)
           version = get_version(contents, type: "redhat")
           platform = get_platform(contents, type: "redhat")
           {platform, version}
         File.exists?(host_etc("gentoo-release")) ->
           platform = "gentoo"
-          contents = read_file(host_etc("gentoo-release"))
+          contents = Fact.Utils.read_file(host_etc("gentoo-release"), sane: false)
           version = get_version(contents, type: "redhat")
           {platform, version}
         File.exists?(host_etc("SuSE-release")) ->
-          contents = read_file(host_etc("SuSE-release"))
+          contents = Fact.Utils.read_file(host_etc("SuSE-release"), sane: false)
           version = get_version(contents, type: "suse")
           platform = get_platform(contents, type: "suse")
           {platform, version}
@@ -132,7 +134,7 @@ defmodule Facts.Host do
         File.exists?(host_etc("alpine-release")) ->
           platform = "alpine"
           contents = read_file(host_etc("alpine-release"))
-          version = contents[0]
+          version = hd(contents)
           {platform, version}
         File.exists?(host_etc("os-release")) ->
           [ID: platform, VERSION_ID: version] = get_os_release()
@@ -168,6 +170,8 @@ defmodule Facts.Host do
       File.exists?(host_etc("lsb-release")) -> get_lsb_release()
       File.exists?("/usr/bin/lsb_release") -> get_lsb_from_bin()
     end
+
+    lsb
   end
 
   @spec get_lsb_release() :: %Facts.Host.LSB{}
@@ -213,47 +217,62 @@ defmodule Facts.Host do
     end
   end
 
+  @spec kernel_version :: binary
+  defp kernel_version() do
+    filename = host_proc("/sys/kernel/osrelease")
+    contents = if File.exists?(filename), do: hd(read_file(filename)), else: ""
+
+    contents
+  end
+
   defp virtualization() do
       xen_file = host_proc("xen")
       modules_file = host_proc("modules")
       cpu_file = host_proc("cpuinfo")
   end
 
-  @spec get_version(list, list) :: binary
-  defp get_version(data, type \\ []) do
+  @spec get_version(binary, list) :: binary
+  defp get_version(data, opts \\ []) do
+    redhat_regex = ~r/release (?<version>\d[\d.]*)/
+    suse_v_regex = ~r/VERSION = (?<version>[\d.]+)/
+    suse_p_regex = ~r/PATCHLEVEL = (?<patch>[\d.]+)/
 
+    data = String.downcase(data)
+
+    filtered = case opts.type do
+      "redhat" -> Regex.named_captures(redhat_regex, data)
+      "suse" ->
+        s = Regex.named_captures(suse_v_regex, data)
+        if is_nil(s), do: Regex.named_captures(suse_p_regex, data)
+    end
+
+    if Map.has_key?(filtered, "version"), do: Map.fetch!(filtered, "version"), else: Map.fetch!(filtered, "patch")
   end
 
-  @spec get_platform(list, list) :: binary
-  defp get_platform(data, type \\ []) do
+  @spec get_platform(binary, list) :: binary
+  defp get_platform(data, opts \\ []) do
+    platform = case opts.type do
+      "redhat" ->
+        "redhat_platform"
+      "suse" ->
+        "suse_platform"
+    end
 
   end
 
   @spec get_family(binary) :: binary
   defp get_family(p) do
     case p do
-      "debian" -> "debian"
-      "ubuntu" -> "debian"
-      "linuxmint" -> "debian"
-      "raspbian" -> "debian"
-      "oracle" -> "rhel"
-      "centos" -> "rhel"
-      "redhat" -> "rhel"
-      "scientific" -> "rhel"
-      "enterpriseenterprise" -> "rhel"
-      "amazon" -> "rhel"
-      "xenserver" -> "rhel"
-      "cloudlinux" -> "rhel"
-      "ibm_powerkvm" -> "rhel"
-      "fedora" -> "fedora"
-      "suse" -> "suse"
-      "opensuse" -> "suse"
-      "gentoo" -> "gentoo"
-      "slackware" -> "slackware"
-      "arch" -> "arch"
-      "exherbo" -> "exherbo"
-      "alpine" -> "alpine"
-      "coreos" -> "coreos"
+      dist when dist in ["debian", "ubuntu", "linuxmint", "raspbian"] -> "debian"
+      dist when dist in ["oracle", "centos", "redhat", "scientific", "enterpriseenterprise", "amazon", "xenserver", "cloudlinux", "ibm_powerkvm"] -> "rhel"
+      dist when dist in ["fedora"] -> "fedora"
+      dist when dist in ["suse", "opensuse"] -> "suse"
+      dist when dist in ["gentoo"] -> "gentoo"
+      dist when dist in ["slackware"] -> "slackware"
+      dist when dist in ["arch"] -> "arch"
+      dist when dist in ["exherbo"] -> "exherbo"
+      dist when dist in ["alpine"] -> "alpine"
+      dist when dist in ["coreos"] -> "coreos"
       _ -> "Undetermined"
     end
   end
