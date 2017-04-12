@@ -8,18 +8,21 @@ defmodule Facts.Host do
     b = boot_time()
     { platform, version } = platform_info()
     { system, role } = virtualization()
+    { _os_family, os_name } = :os.type()
 
     %Facts.Host.InfoStat{
       hostname: hostname(),
       uptime: up_time(b),
       bootime: b,
       procs: counts(),
+      os: Atom.to_string(os_name),
       platform: platform,
       platform_family: get_family(platform),
       platform_version: version,
       kernel_version: kernel_version(),
       virtualizatioon_system: system,
-      virtualization_role: role
+      virtualization_role: role,
+      host_id: host_id()
     }
   end
 
@@ -42,7 +45,7 @@ defmodule Facts.Host do
    end
   end
 
-  @spec hostname :: binary
+  @spec hostname :: String.t
   defp hostname do
    case System.cmd "hostname", [] do
      {k, 0} ->
@@ -51,6 +54,19 @@ defmodule Facts.Host do
         Logger.error "Unable to determine the Hostname"
         "Undetermined"
    end
+  end
+
+  @spec host_id :: String.t
+  defp host_id() do
+    contents = System.cmd "sudo", ["cat", "/sys/class/dmi/id/product_uuid"]
+
+    case contents do
+      {id, 0} -> String.replace(id, "\n", "")
+      {_, 1 } ->
+        Logger.error "Unable to read host_id, this is likely due to incorrect or lack of permissions."
+        "Unable to read"
+      {_,_} -> "Undertermined"
+    end
   end
 
   @spec boot_time :: integer
