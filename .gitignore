@@ -19,7 +19,6 @@ erl_crash.dump
 /tmp/
 .dat*
 .repl_history
-build/
 *.bridgesupport
 build-iPhoneOS/
 build-iPhoneSimulator/

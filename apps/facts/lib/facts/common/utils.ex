@@ -54,7 +54,9 @@ defmodule Facts.Utils do
 
     filtered =
       case opts[:sane] do
-        true -> String.split(unfiltered, "\n") |> Enum.filter(& !(String.length(&1) == 0))
+        true -> unfiltered
+                |> String.spilt("\n")
+                |> Enum.filter(& !(String.length(&1) == 0))
         _ -> unfiltered
       end
 
@@ -65,16 +67,17 @@ defmodule Facts.Utils do
   def sanitize_data("" = data) when is_binary(data), do: ""
   def sanitize_data("\n" = newline) when is_binary(newline), do: ""
   def sanitize_data(data) when is_binary(data) do
-    [k,v] = Regex.replace(~r/(\t|\n)+/, data, "")
+    [k, v] = Regex.replace(~r/(\t|\n)+/, data, "")
       |> String.split(":", trim: true)
-    Map.put(%{}, k, v )
+    Map.put(%{}, k, v)
   end
 
   @spec normalize_with_underscore(map) :: map
   def normalize_with_underscore(item) when is_map(item) do
-    k = Map.keys(item)
-      |> Enum.map(fn(x) -> String.trim(x) |> String.downcase |> String.replace(~r/\s+/,"_") end)
-      |> hd
+    k = item
+        |> Map.keys()
+        |> Enum.map(fn(x) -> String.trim(x) |> String.downcase |> String.replace(~r/\s+/, "_") end)
+        |> hd
 
     Map.new([{k, hd(Map.values(item))}])
   end
@@ -84,9 +87,9 @@ defmodule Facts.Utils do
     k = elem(item, 0)
       |> String.trim
       |> String.downcase
-      |> String.replace(~r/\s+/,"_")
+      |> String.replace(~r/\s+/, "_")
 
-    {k, elem(item,1)}
+    {k, elem(item, 1)}
   end
 
   @spec normalize_with_underscore(binary) :: map
