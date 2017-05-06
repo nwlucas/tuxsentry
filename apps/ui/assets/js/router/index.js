@@ -1,7 +1,8 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-import Container from 'components/app-container';
+/* eslint-disable no-extraneous-dependencies */
+import Container from 'components/layout/app-container';
 import DashboardPage from 'views/dashboard';
 import LogsPage from 'views/logs';
 import ServicesPage from 'views/services';

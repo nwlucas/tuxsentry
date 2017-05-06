@@ -10,11 +10,11 @@
     AppFooter
 </template>
 <script>
-  import AppHeader from './app-header';
-  import Sidebar from './sidebar';
-  import AppAside from './app-aside';
-  import AppFooter from './app-footer';
-  import Breadcrumb from './breadcrumb';
+  import AppHeader from 'layout/app-header';
+  import Sidebar from 'layout/sidebar';
+  import AppAside from 'layout/app-aside';
+  import AppFooter from 'layout/app-footer';
+  import Breadcrumb from 'layout/breadcrumb';
 
   export default {
     name: 'AppContainer',

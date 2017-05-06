@@ -14,13 +14,11 @@
 </template>
 <script>
   import navbar from './navbar';
-  import { dropdown } from 'vue-strap';
 
   export default {
     name: 'AppHeader',
     components: {
         navbar,
-        dropdown
     },
     methods: {
         click () {

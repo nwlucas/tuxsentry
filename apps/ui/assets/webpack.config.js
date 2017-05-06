@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const assetsRoot = path.resolve('../priv/static');
 const StylExtract = require('extract-text-webpack-plugin');
+const projectRoot = path.resolve(__dirname, './');
 
 function assetsPath(_dir) {
   return path.join( assetsRoot, _dir)
@@ -14,8 +15,14 @@ module.exports = ( env = {}) => {
 
   return {
     entry: {
-      'js/app.js': './js/main.js',
-      'css/app.css': './styles/style.scss',
+      'js/app.js': ['./js/main.js'],
+      'css/app.css': ['./styles/style.scss'],
+      'js/vendor.js': [
+        'vue',
+        'vue-router',
+        'vuex',
+        'vuex-router-sync'
+      ],
     },
     output: {
       path: assetsRoot,
@@ -23,16 +30,18 @@ module.exports = ( env = {}) => {
       filename: '[name]',
     },
     resolve: {
-      extensions: [ '.js', '.json', '.vue' ],
+      extensions: ['.js', '.json', '.vue', '.css'],
       modules: [
         path.resolve('js'),
         path.resolve('node_modules')
       ],
       alias: {
-        'vue$': 'vue/dist/vue.esm.js',
-        'components': path.resolve('components'),
-        'views': path.resolve('views'),
-        '@': path.resolve( __dirname, 'js'),
+        vue$: 'vue/dist/vue.esm.js',
+        components: path.resolve(__dirname, 'components/'),
+        layout: path.resolve(__dirname, 'components/layout/'),
+        views: path.resolve(__dirname, 'views/'),
+        'vuex-store': path.resolve(__dirname,'js/store/'),
+        '@': path.resolve(__dirname, 'js'),
        },
     },
     module: {
@@ -42,6 +51,7 @@ module.exports = ( env = {}) => {
           loader: 'eslint-loader',
           enforce: 'pre',
           include: [ path.resolve(__dirname, 'js'), path.resolve(__dirname, 'test') ],
+          exclude: /node_modules/,
           options: {
             formatter: require('eslint-friendly-formatter'),
           },
@@ -55,17 +65,13 @@ module.exports = ( env = {}) => {
         {
           test: /\.vue$/,
           loader: 'vue-loader',
-          options: {
-            loaders: {
-              'scss': [ 'vue-style-loader', 'css-loader', 'sass-loader'],
-              'sass': ['vue-style-loader', 'css-loader', 'sass-loader?indentedSyntax' ]
-            }
-          },
+          options: require('./build/vue-loader.conf'),
         },
         {
           test: /\.js$/,
           loader: 'babel-loader',
           include: [ path.resolve(__dirname, 'js'), path.resolve(__dirname, 'test') ],
+          exclude: [new RegExp(`node_modules\\${path.sep}(?!vue-bulma-.*)`)],
         },
         {
           test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -80,7 +86,7 @@ module.exports = ( env = {}) => {
           loader: 'url-loader',
           options: {
             limit: 10000,
-            name: 'fonts/[name].[ext]'
+            name: 'fonts/[name].[hash:7].[ext]'
           },
         },
       ],
@@ -92,6 +98,10 @@ module.exports = ( env = {}) => {
       }),
       new StylExtract({
         filename: 'css/app.css',
+      }),
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'js/vendor.js',
+        filename: 'js/vendor.js',
       }),
     ],
     devtool: (() => {

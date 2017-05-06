@@ -9,6 +9,7 @@
 
     <title>Hello TuxSentry.UI!</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <script src="<%= static_path(@conn, "/js/vendor.js") %>"></script>
   </head>
 
   <body class="app header-fixed sidebar-fixed sidebar-compact aside-menu-fixed aside-menu-hidden">
