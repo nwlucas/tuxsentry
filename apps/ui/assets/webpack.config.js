@@ -15,9 +15,8 @@ module.exports = ( env = {}) => {
 
   return {
     entry: {
-      'js/app.js': ['./js/main.js'],
-      'css/app.css': ['./styles/style.scss'],
-      'js/vendor.js': [
+      'app.js': ['./js/index.js'],
+      'vendor.js': [
         'vue',
         'vue-router',
         'vuex',
@@ -27,7 +26,7 @@ module.exports = ( env = {}) => {
     output: {
       path: assetsRoot,
       publicPath: '/',
-      filename: '[name]',
+      filename: 'js/[name]',
     },
     resolve: {
       extensions: ['.js', '.json', '.vue', '.css'],
@@ -40,6 +39,7 @@ module.exports = ( env = {}) => {
         components: path.resolve(__dirname, 'components/'),
         layout: path.resolve(__dirname, 'components/layout/'),
         views: path.resolve(__dirname, 'views/'),
+        images: path.resolve(__dirname, 'images'),
         'vuex-store': path.resolve(__dirname,'js/store/'),
         '@': path.resolve(__dirname, 'js'),
        },
@@ -50,7 +50,7 @@ module.exports = ( env = {}) => {
           test: /\.(js|vue)$/,
           loader: 'eslint-loader',
           enforce: 'pre',
-          include: [ path.resolve(__dirname, 'js'), path.resolve(__dirname, 'test') ],
+          include: projectRoot,
           exclude: /node_modules/,
           options: {
             formatter: require('eslint-friendly-formatter'),
@@ -100,7 +100,7 @@ module.exports = ( env = {}) => {
         filename: 'css/app.css',
       }),
       new webpack.optimize.CommonsChunkPlugin({
-        name: 'js/vendor.js',
+        name: 'vendor.js',
         filename: 'js/vendor.js',
       }),
     ],
