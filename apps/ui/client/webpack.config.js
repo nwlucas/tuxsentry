@@ -15,7 +15,7 @@ module.exports = ( env = {}) => {
 
   return {
     entry: {
-      'app.js': ['./js/index.js'],
+      'app.js': ['./js/main.js'],
       'vendor.js': [
         'vue',
         'vue-router',

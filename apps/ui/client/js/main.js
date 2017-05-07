@@ -6,7 +6,8 @@ import { sync } from 'vuex-router-sync';
 import AppEntry from 'components/app';
 import store from './store';
 import router from './router';
-import * as filters from './filters';
+import filters from './filters';
+import init from './init';
 
 Vue.config.productionTip = false;
 
@@ -21,12 +22,16 @@ Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key]);
 });
 
+init();
+
 /* eslint-disable no-new */
 const app = new Vue({
+  el: '#tuxUi',
   store,
   router,
   nprogress,
-  ...AppEntry,
+  template: '<AppEntry/>',
+  components: { AppEntry },
 });
 
 export { app, router, store };

@@ -13,15 +13,13 @@ defmodule TuxSentry.UI.Web.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/sys", TuxSentry.UI.Web do
+    pipe_through :api
+  end
+
   scope "/", TuxSentry.UI.Web do
     pipe_through :browser # Use the default browser stack
 
-    get "/", PageController, :index
     get "/*path", PageController, :index
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", TuxSentry.UI.Web do
-  #   pipe_through :api
-  # end
 end

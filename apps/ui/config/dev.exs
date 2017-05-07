@@ -15,7 +15,7 @@ config :ui, TuxSentry.UI.Web.Endpoint,
                     "--progress",
                     "--colors",
                     "--watch",
-             cd: Path.expand("../assets", __DIR__) ]]
+             cd: Path.expand("../client", __DIR__) ]]
 
 # ## SSL Support
 #
