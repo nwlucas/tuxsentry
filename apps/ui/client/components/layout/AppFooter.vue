@@ -2,7 +2,7 @@
   footer.footer
     .columns
       .column.is-one-quarter
-        p &copy; 2017
+        p &copy;2017
           = " "
           a(href="https://www.dtlr.com") DTLR
       .column
@@ -12,7 +12,7 @@
 </template>
 <script>
   export default {
-    name: 'AppFooter',
+    name: 'AppFooter'
   };
 </script>
 <style lang="scss">

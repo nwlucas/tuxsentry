@@ -1,10 +1,10 @@
 defmodule TuxSentry.UI.Web.UserSocket do
   use Phoenix.Socket
 
-  ## Channels
-  channel "room:*", TuxSentry.UI.Web.SysChannel
+  channel "room:sys", TuxSentry.UI.Web.SysChannel
+  channel "room:services", TuxSentry.UI.Web.ServicesChannel
+  channel "room:logs", TuxSentry.UI.Web.LogsChannel
 
-  ## Transports
   transport :websocket, Phoenix.Transports.WebSocket, timeout: 45_000
   # transport :longpoll, Phoenix.Transports.LongPoll
 

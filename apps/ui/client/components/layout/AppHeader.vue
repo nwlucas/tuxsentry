@@ -1,8 +1,8 @@
 <template lang="pug">
   .hero-head
     nav.nav.has-shadow
-      .nav-left.hero-brand.logo
-        a.nav-item(href="#")
+      .nav-left.hero-brand
+        a.nav-item.is-brand.logo(href="#")
           img(src="~images/logo.png", alt="TuxSentryUI")
         router-link.nav-item.is-tab.is-hidden-mobile(to="/dashboard")
           | Dashboard
@@ -12,7 +12,7 @@
           | Logs
         router-link.nav-item.is-tab.is-hidden-mobile(to="/docs")
           | Docs
-      span.nav-toggle
+      span#nav-toggle.nav-toggle
         span
         span
         span
@@ -20,8 +20,6 @@
 <script>
   export default {
     name: 'AppHeader',
-    components: {
-    },
     methods: {
       click() {
 
@@ -37,8 +35,8 @@
       asideToggle(e) {
         e.preventDefault();
         document.body.classList.toggle('aside-menu-hidden');
-      },
-    },
+      }
+    }
   };
 </script>
 <style lang="scss">
@@ -49,6 +47,7 @@
     min-width: 100%;
     z-index: 1024;
     box-shadow: 0 2px 3px rgba(17, 17, 17, 0.1), 0 0 0 1px rgba(17, 17, 17, 0.1);
+    background-color: #36a9e1;
     .container {
       margin: auto 10px;
     }
@@ -64,7 +63,8 @@
   }
   .hero-brand {
     .logo {
-      margin-left: 10px;
+      background-color: #1e8fc6;
+      min-width: 180px;
       color: #36AC70;
     }
   }

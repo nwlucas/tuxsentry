@@ -3,6 +3,7 @@ const path = require('path');
 const assetsRoot = path.resolve('../priv/static');
 const StylExtract = require('extract-text-webpack-plugin');
 const projectRoot = path.resolve(__dirname, './');
+const vueLoaderConfig = require('./build/vue-loader.conf');
 
 function assetsPath(_dir) {
   return path.join( assetsRoot, _dir)
@@ -20,7 +21,10 @@ module.exports = ( env = {}) => {
         'vue',
         'vue-router',
         'vuex',
-        'vuex-router-sync'
+        'vuex-router-sync',
+        'axios',
+        'vue-axios',
+        'phoenix-elixir'
       ],
     },
     output: {
@@ -35,7 +39,7 @@ module.exports = ( env = {}) => {
         path.resolve('node_modules')
       ],
       alias: {
-        vue$: 'vue/dist/vue.esm.js',
+        vue$: 'vue/dist/vue.common.js',
         components: path.resolve(__dirname, 'components/'),
         layout: path.resolve(__dirname, 'components/layout/'),
         views: path.resolve(__dirname, 'views/'),
@@ -65,7 +69,7 @@ module.exports = ( env = {}) => {
         {
           test: /\.vue$/,
           loader: 'vue-loader',
-          options: require('./build/vue-loader.conf'),
+          options: vueLoaderConfig,
         },
         {
           test: /\.js$/,

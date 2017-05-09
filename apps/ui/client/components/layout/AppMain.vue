@@ -2,7 +2,6 @@
   section.app-main
     .container.is-fluid.is-marginless.app-content
       LevelBar
-      router-view
 </template>
 <script>
   import LevelBar from './Levelbar';
@@ -10,8 +9,8 @@
   export default {
     name: 'AppMain',
     components: {
-      LevelBar,
-    },
+      LevelBar
+    }
   };
 </script>
 <style lang="scss">

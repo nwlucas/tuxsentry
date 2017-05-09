@@ -13,12 +13,12 @@
   export default {
     name: 'LevelBar',
     components: {
-      Breadcrumb,
+      Breadcrumb
     },
 
     data() {
       return {
-        list: null,
+        list: null
       };
     },
 
@@ -29,7 +29,7 @@
     computed: {
       name() {
         return this.$route.name;
-      },
+      }
     },
 
     methods: {
@@ -40,14 +40,14 @@
           matched = [{ name: 'Home', path: '/' }].concat(matched);
         }
         this.list = matched;
-      },
+      }
     },
 
     watch: {
       $route() {
         this.getList();
-      },
-    },
+      }
+    }
   };
 </script>
 <style lang="scss">

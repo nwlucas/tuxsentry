@@ -31,7 +31,7 @@ const app = new Vue({
   router,
   nprogress,
   template: '<AppEntry/>',
-  components: { AppEntry },
+  components: { AppEntry }
 });
 
 export { app, router, store };

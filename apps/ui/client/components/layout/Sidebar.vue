@@ -18,16 +18,21 @@
 </template>
 <script>
   export default {
-    name: 'Sidebar',
+    name: 'Sidebar'
   };
 </script>
 <style lang="scss">
-.app-sidebar{
-  position: fixed;
-  top: 50px;
-  left: 0;
-  bottom: 0;
-  padding: 20px 0 50px;
-  width: 180px;
-}
+  .app-sidebar{
+    position: fixed;
+    top: 50px;
+    left: 0;
+    bottom: 0;
+    padding: 20px 0 50px;
+    width: 180px;
+    background-color: #383e4b;
+
+    .menu-list {
+      color: #fff;
+    }
+  }
 </style>
