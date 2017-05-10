@@ -1,0 +1,41 @@
+digraph "xref graph" {
+  "lib/ui/application.ex"
+  "lib/ui/application.ex" -> "lib/ui/web/endpoint.ex"
+  "lib/ui/web/endpoint.ex" -> "lib/ui/web/router.ex" [label="(compile)"]
+  "lib/ui/web/router.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/channels/logs_channel.ex"
+  "lib/ui/web/channels/logs_channel.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/channels/logs_channel.ex" -> "lib/ui/web/gettext.ex" [label="(compile)"]
+  "lib/ui/web/channels/services_channel.ex"
+  "lib/ui/web/channels/services_channel.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/channels/services_channel.ex" -> "lib/ui/web/gettext.ex" [label="(compile)"]
+  "lib/ui/web/channels/sys_channel.ex"
+  "lib/ui/web/channels/sys_channel.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/channels/sys_channel.ex" -> "lib/ui/web/gettext.ex" [label="(compile)"]
+  "lib/ui/web/channels/user_socket.ex"
+  "lib/ui/web/controllers/page_controller.ex"
+  "lib/ui/web/controllers/page_controller.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/controllers/page_controller.ex" -> "lib/ui/web/gettext.ex" [label="(compile)"]
+  "lib/ui/web/controllers/page_controller.ex" -> "lib/ui/web/router.ex" [label="(compile)"]
+  "lib/ui/web/endpoint.ex"
+  "lib/ui/web/gettext.ex"
+  "lib/ui/web/router.ex"
+  "lib/ui/web/views/error_helpers.ex"
+  "lib/ui/web/views/error_helpers.ex" -> "lib/ui/web/gettext.ex"
+  "lib/ui/web/views/error_view.ex"
+  "lib/ui/web/views/error_view.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/views/error_view.ex" -> "lib/ui/web/views/error_helpers.ex" [label="(compile)"]
+  "lib/ui/web/views/error_view.ex" -> "lib/ui/web/gettext.ex" [label="(compile)"]
+  "lib/ui/web/views/error_view.ex" -> "lib/ui/web/router.ex" [label="(compile)"]
+  "lib/ui/web/views/layout_view.ex"
+  "lib/ui/web/views/layout_view.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/views/layout_view.ex" -> "lib/ui/web/views/error_helpers.ex" [label="(compile)"]
+  "lib/ui/web/views/layout_view.ex" -> "lib/ui/web/gettext.ex" [label="(compile)"]
+  "lib/ui/web/views/layout_view.ex" -> "lib/ui/web/router.ex" [label="(compile)"]
+  "lib/ui/web/views/page_view.ex"
+  "lib/ui/web/views/page_view.ex" -> "lib/ui/web/web.ex" [label="(compile)"]
+  "lib/ui/web/views/page_view.ex" -> "lib/ui/web/views/error_helpers.ex" [label="(compile)"]
+  "lib/ui/web/views/page_view.ex" -> "lib/ui/web/gettext.ex" [label="(compile)"]
+  "lib/ui/web/views/page_view.ex" -> "lib/ui/web/router.ex" [label="(compile)"]
+  "lib/ui/web/web.ex"
+}
