@@ -1,4 +1,6 @@
 defmodule TuxSentry.UI.Application do
+  @moduledoc """
+  """
   use Application
 
   def start(_type, _args) do
