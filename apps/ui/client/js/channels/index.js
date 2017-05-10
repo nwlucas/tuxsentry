@@ -1,4 +1,4 @@
-import { Socket } from 'phoenix-elixir';
+import { Socket } from 'phoenix-socket';
 import { socketURL } from '../utils';
 
 const socket = new Socket(socketURL, { params: { token: window.userToken } });

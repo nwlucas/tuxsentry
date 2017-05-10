@@ -5322,9 +5322,9 @@ permutation-rank@^1.0.0:
     invert-permutation "^1.0.0"
     typedarray-pool "^1.0.0"
 
-phoenix-elixir@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/phoenix-elixir/-/phoenix-elixir-1.2.1.tgz#717350e0478dd3739c303104eca433f45f6ebafe"
+phoenix-socket@^1.2.1:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/phoenix-socket/-/phoenix-socket-1.2.3.tgz#90d4d96e39961d82f72c255f9150e9afd623d41f"
 
 pify@^2.0.0, pify@^2.3.0:
   version "2.3.0"

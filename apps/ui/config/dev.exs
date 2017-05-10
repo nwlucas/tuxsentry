@@ -1,21 +1,22 @@
 use Mix.Config
 
-# For development, we disable any cache and enable
-# debugging and code reloading.
+# webpack_args: ["node_modules/webpack/bin/webpack.js",
+#                   "--progress",
+#                   "--colors",
+#                   "--watch"]
 #
-# The watchers configuration can be used to run external
-# watchers to your application. For example, we use it
-# with brunch.io to recompile .js and .css sources.
+# if IEx.started?, do: webpack_args = List.delete(webpack_args, "--progress")
+
 config :ui, TuxSentry.UI.Web.Endpoint,
   http: [port: 4000],
   debug_errors: true,
   code_reloader: true,
-  check_origin: false,
-  watchers: [node: ["node_modules/webpack/bin/webpack.js",
-                    "--progress",
-                    "--colors",
-                    "--watch",
-             cd: Path.expand("../client", __DIR__) ]]
+  check_origin: false
+  # watchers: [node: ["node_modules/webpack/bin/webpack.js",
+  #                   "--progress",
+  #                   "--colors",
+  #                   "--watch",
+  #            cd: Path.expand("../client", __DIR__)]]
 
 # ## SSL Support
 #

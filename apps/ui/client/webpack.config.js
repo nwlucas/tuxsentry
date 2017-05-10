@@ -24,7 +24,7 @@ module.exports = ( env = {}) => {
         'vuex-router-sync',
         'axios',
         'vue-axios',
-        'phoenix-elixir'
+        'phoenix-socket'
       ],
     },
     output: {
