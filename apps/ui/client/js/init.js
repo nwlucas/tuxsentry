@@ -7,9 +7,12 @@ export default function init() {
   const svsChannel = socket.channel('room:services');
   const logChannel = socket.channel('room:logs');
   sysChannel.join()
-    .receive('ok', () => console.log('Sys channel Joined'));
+    .receive('ok', response => { console.log('Sys channel joined', response); })
+    .receive('error', response => { console.log('Unable to join the sys channel', response); })
   svsChannel.join()
-    .receive('ok', () => console.log('Services channel Joined'));
+  .receive('ok', response => { console.log('Services channel joined', response); })
+  .receive('error', response => { console.log('Unable to join the services channel', response); })
   logChannel.join()
-    .receive('ok', () => console.log('Logs channel Joined'));
+  .receive('ok', response => { console.log('Logs channel joined', response); })
+  .receive('error', response => { console.log('Unable to join the logs channel', response); })
 }

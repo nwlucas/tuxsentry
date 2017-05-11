@@ -1,7 +1,7 @@
 defmodule TuxSentry.UI.Web.Endpoint do
   use Phoenix.Endpoint, otp_app: :ui
 
-  socket "/socket", TuxSentry.UI.Web.UserSocket
+  socket "/socket", TuxSentry.UI.Web.SystemSocket
 
   # Serve at "/" the static files from "priv/static" directory.
   #

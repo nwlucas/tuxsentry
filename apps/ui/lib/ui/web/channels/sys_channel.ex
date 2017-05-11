@@ -7,6 +7,11 @@ defmodule TuxSentry.UI.Web.SysChannel do
     {:ok, socket}
   end
 
+  def handle_in("get:facts", msg, socket) do
+    broadcast!(socket, "get_facts", msg)
+    {:noreply, socket}
+  end
+
   def leave(_reason, socket) do
     {:ok, socket}
   end

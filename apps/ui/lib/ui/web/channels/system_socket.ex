@@ -1,4 +1,4 @@
-defmodule TuxSentry.UI.Web.UserSocket do
+defmodule TuxSentry.UI.Web.SystemSocket do
   use Phoenix.Socket
 
   channel "room:sys", TuxSentry.UI.Web.SysChannel
