@@ -27,7 +27,7 @@ defmodule Facts.Mixfile do
   end
 
   defp deps do
-    [ {:poison, "~> 3.0"},
+    [{:poison, "~> 3.0"},
       {:porcelain, "~> 2.0"}]
   end
 end

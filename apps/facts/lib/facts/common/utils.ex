@@ -55,7 +55,7 @@ defmodule Facts.Utils do
     filtered =
       case opts[:sane] do
         true -> unfiltered
-                |> String.spilt("\n")
+                |> String.split("\n")
                 |> Enum.filter(& !(String.length(&1) == 0))
         _ -> unfiltered
       end
@@ -67,8 +67,11 @@ defmodule Facts.Utils do
   def sanitize_data("" = data) when is_binary(data), do: ""
   def sanitize_data("\n" = newline) when is_binary(newline), do: ""
   def sanitize_data(data) when is_binary(data) do
-    [k, v] = Regex.replace(~r/(\t|\n)+/, data, "")
-      |> String.split(":", trim: true)
+    [k, v] =
+      data
+        |> (&Regex.replace(~r/(\t|\n)+/, &1, "")).()
+        |> String.split(":", trim: true)
+
     Map.put(%{}, k, v)
   end
 
@@ -76,7 +79,7 @@ defmodule Facts.Utils do
   def normalize_with_underscore(item) when is_map(item) do
     k = item
         |> Map.keys()
-        |> Enum.map(fn(x) -> String.trim(x) |> String.downcase |> String.replace(~r/\s+/, "_") end)
+        |> Enum.map(fn(x) -> x |> String.trim |> String.downcase |> String.replace(~r/\s+/, "_") end)
         |> hd
 
     Map.new([{k, hd(Map.values(item))}])
@@ -84,12 +87,13 @@ defmodule Facts.Utils do
 
   @spec normalize_with_underscore(tuple) :: tuple
   def normalize_with_underscore(item) when is_tuple(item) do
-    k = elem(item, 0)
+    item
+      |> elem(0)
       |> String.trim
       |> String.downcase
       |> String.replace(~r/\s+/, "_")
-
-    {k, elem(item, 1)}
+      |> (&Tuple.insert_at({}, 0, &1)).()
+      |> Tuple.insert_at(1, elem(item, 1))
   end
 
   @spec normalize_with_underscore(binary) :: map

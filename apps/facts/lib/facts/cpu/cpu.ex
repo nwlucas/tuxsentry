@@ -17,33 +17,30 @@ defmodule Facts.CPU do
    end
   end
 
-  @spec info :: tuple
-  def info do
+  @spec cpu_info :: tuple
+  def cpu_info do
     filename = host_proc("cpuinfo")
     file = File.open!(filename)
-    try do
-      data = IO.binstream(file, :line)
-         |> Enum.map(& sanitize_data(&1) )
-         |> Enum.map(& normalize_with_underscore(&1) )
-         |> Enum.map(& finish_info(&1))
-         |> delete_all(%{})
-         |> split_data()
-         |> Enum.map(& flatten_info(&1))
-         |> Enum.map(& populate_info(&1))
+    data =
+      file
+       |> IO.binstream(:line)
+       |> Enum.map(& sanitize_data(&1))
+       |> Enum.map(& normalize_with_underscore(&1))
+       |> Enum.map(& finish_info(&1))
+       |> delete_all(%{})
+       |> split_data()
+       |> Enum.map(& flatten_info(&1))
+       |> Enum.map(& populate_info(&1))
 
-     {:ok, data}
-   rescue
-     e -> Logger.error "Error occured: " <> e
-     {:error, e}
-    after
-      File.close(file)
-    end
+    {:ok, data}
   end
 
   @spec split_data(original :: list) :: list
   defp split_data(data) do
-    i = Enum.with_index(data)
-      |> Enum.filter_map(fn {m, _} -> Map.has_key?(m, :processor) end , fn {_, i} -> i end )
+    i =
+      data
+        |> Enum.with_index
+        |> Enum.filter_map(fn {m, _} -> Map.has_key?(m, :processor) end , fn {_, i} -> i end)
 
     interval = hd(tl(i)) - hd(i)
     split_data(data, interval)

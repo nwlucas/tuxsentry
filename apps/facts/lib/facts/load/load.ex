@@ -1,18 +1,20 @@
 defmodule Facts.Load do
   @moduledoc """
   """
-  alias Facts.Load.{AvgStat,MiscStat}
+  alias Facts.Load.{AvgStat, MiscStat}
   import Facts.Utils
   require Logger
 
-  def avg() do
+  def avg do
    filename = host_proc("loadavg")
    contents = read_file(filename, sane: true)
 
-   loads = hd(contents)
-            |> String.splitter(" ", trim: true)
-            |> Enum.take(3)
-            |> Enum.map(& String.to_float(&1))
+   loads =
+     contents
+      |> hd
+      |> String.splitter(" ", trim: true)
+      |> Enum.take(3)
+      |> Enum.map(& String.to_float(&1))
 
     %AvgStat{
       load1: Enum.fetch!(loads, 0),
@@ -22,7 +24,7 @@ defmodule Facts.Load do
 
   end
 
-  def misc() do
+  def misc do
    filename = host_proc("stat")
    contents = read_file(filename, sane: false)
 

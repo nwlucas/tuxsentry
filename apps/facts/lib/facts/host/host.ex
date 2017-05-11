@@ -1,14 +1,14 @@
 defmodule Facts.Host do
   @moduledoc """
   """
-  import Facts.Utils, except: [read_file: 1]
+  import Facts.Utils
   require Logger
 
-  def info do
+  def host_info do
     b = boot_time()
-    { platform, version } = platform_info()
-    { system, role } = virtualization()
-    { _os_family, os_name } = :os.type()
+    {platform, version} = platform_info()
+    {system, role} = virtualization()
+    {_os_family, os_name} = :os.type()
 
     %Facts.Host.InfoStat{
       hostname: hostname(),
@@ -32,10 +32,6 @@ defmodule Facts.Host do
   # break the existing codebase, but this may change as the default may flip and should only do so once all calls to it
   # have been updated.
 
-  defp read_file(filename) do
-    Facts.Utils.read_file(filename, sane: true)
-  end
-
   @spec counts :: integer
   defp counts do
    case System.cmd "nproc", [] do
@@ -57,15 +53,15 @@ defmodule Facts.Host do
   end
 
   @spec host_id :: String.t
-  defp host_id() do
+  defp host_id do
     contents = System.cmd "sudo", ["cat", "/sys/class/dmi/id/product_uuid"]
 
     case contents do
       {id, 0} -> String.replace(id, "\n", "")
-      {_, 1 } ->
+      {_, 1} ->
         Logger.error "Unable to read host_id, this is likely due to incorrect or lack of permissions."
         "Unable to read"
-      {_,_} -> "Undertermined"
+      {_, _} -> "Undertermined"
     end
   end
 
@@ -74,11 +70,13 @@ defmodule Facts.Host do
     filename = host_proc("stat")
 
     try do
-      btime = read_file(filename)
-              |> Enum.filter(& String.starts_with?(&1, "btime"))
-              |> Enum.flat_map(& String.split(&1))
-              |> Enum.fetch!(1)
-              |> String.to_integer()
+      btime =
+        filename
+          |> read_file(sane: true)
+          |> Enum.filter(& String.starts_with?(&1, "btime"))
+          |> Enum.flat_map(& String.split(&1))
+          |> Enum.fetch!(1)
+          |> String.to_integer()
 
       btime
     rescue
@@ -91,8 +89,8 @@ defmodule Facts.Host do
   @spec up_time(integer) :: integer
   defp up_time(b), do: System.system_time(:millisecond) - b
 
-  @spec platform_info :: { binary, binary }
-  defp platform_info() do
+  @spec platform_info :: {binary, binary}
+  defp platform_info do
     try do
       lsb = get_lsb()
 
@@ -127,22 +125,22 @@ defmodule Facts.Host do
               contents = read_file(host_etc("debian_version"))
           end
         File.exists?(host_etc("redhat-release")) ->
-          contents = Facts.Utils.read_file(host_etc("redhat-release"), sane: false)
+          contents = read_file(host_etc("redhat-release"))
           version = get_version(contents)
           platform = get_platform(contents)
           {platform, version}
         File.exists?(host_etc("system-release")) ->
-          contents = Facts.Utils.read_file(host_etc("system-release"), sane: false)
+          contents = read_file(host_etc("system-release"))
           version = get_version(contents)
           platform = get_platform(contents)
           {platform, version}
         File.exists?(host_etc("gentoo-release")) ->
           platform = "gentoo"
-          contents = Facts.Utils.read_file(host_etc("gentoo-release"), sane: false)
+          contents = read_file(host_etc("gentoo-release"))
           version = get_version(contents)
           {platform, version}
         File.exists?(host_etc("SuSE-release")) ->
-          contents = Facts.Utils.read_file(host_etc("SuSE-release"), sane: false)
+          contents = read_file(host_etc("SuSE-release"))
           version = get_version(contents, type: "suse")
           platform = get_platform(contents, type: "suse")
           {platform, version}
@@ -156,51 +154,55 @@ defmodule Facts.Host do
           version = hd(contents)
           {platform, version}
         File.exists?(host_etc("os-release")) -> get_os_release()
-        lsb.id == "ScienticficSL" -> { "scientific", lsb.release }
-        lsb.id != "" -> { String.downcase(lsb.id), lsb.release }
+        lsb.id == "ScienticficSL" -> {"scientific", lsb.release}
+        lsb.id != "" -> {String.downcase(lsb.id), lsb.release}
       end
     rescue
         e -> Logger.error "Error occured while capturing Platform Information" <> e
-        {"",""}
+        {"", ""}
     end
   end
 
-  @spec get_os_release() :: {String.t, String.t}
-  defp get_os_release() do
+  @spec get_os_release :: {String.t, String.t}
+  defp get_os_release do
     filename = host_etc("os-release")
 
     try do
-      rel = read_file(filename)
-            |> Enum.map(& String.replace(&1, "\"", ""))
-            |> Enum.map(& String.split(&1, "="))
-            |> Enum.map(fn (x) -> {String.to_atom(String.downcase(hd(x))), Enum.fetch!(tl(x), 0)} end )
+      rel =
+        filename
+          |> read_file
+          |> Enum.map(& String.replace(&1, "\"", ""))
+          |> Enum.map(& String.split(&1, "="))
+          |> Enum.map(fn (x) -> {String.to_atom(String.downcase(hd(x))), Enum.fetch!(tl(x), 0)} end)
 
-      { rel[:id], rel[:version] }
+      {rel[:id], rel[:version]}
     rescue
       e -> Logger.error "Error occured: " <> e
       {"", ""}
     end
   end
 
-  @spec get_lsb() :: %Facts.Host.LSB{}
-  defp get_lsb() do
-    lsb = cond do
-      File.exists?(host_etc("lsb-release")) -> get_lsb_release()
-      File.exists?("/usr/bin/lsb_release") -> get_lsb_from_bin()
-    end
+  @spec get_lsb :: %Facts.Host.LSB{}
+  defp get_lsb do
+    lsb =
+      if File.exists?(host_etc("lsb-release")), do: get_lsb_release()
+      if File.exists?("/usr/bin/lsb_release"), do: get_lsb_from_bin()
 
     lsb
   end
 
-  @spec get_lsb_release() :: %Facts.Host.LSB{}
-  defp get_lsb_release() do
-    lines = read_file(host_etc("lsb-release"))
-            |> Enum.map(& String.replace(&1, "\"", ""))
-            |> Enum.map(& String.split(&1, "="))
-            |> Enum.map(fn (x) -> {
-                  String.to_atom(String.trim_leading(hd(x), "DISTRIB_")),
-                  Enum.fetch!(tl(x), 0)
-                } end )
+  @spec get_lsb_release :: %Facts.Host.LSB{}
+  defp get_lsb_release do
+    lines =
+      "lsb-release"
+      |> host_etc()
+      |> read_file(sane: true)
+      |> Enum.map(& String.replace(&1, "\"", ""))
+      |> Enum.map(& String.split(&1, "="))
+      |> Enum.map(fn (x) -> {
+            String.to_atom(String.trim_leading(hd(x), "DISTRIB_")),
+            Enum.fetch!(tl(x), 0)
+          } end)
 
     %Facts.Host.LSB{
       id: lines[:ID],
@@ -212,19 +214,21 @@ defmodule Facts.Host do
 
   # Todo. This function has only been fleshed out and I already know there are validation issues with it.
   # WIP needs to be properly written to handle cleanup of spaces and cases.
-  defp get_lsb_from_bin() do
-    { lines, _} = System.cmd "/usr/bin/lsb_release", []
+  defp get_lsb_from_bin do
+    {lines, _} = System.cmd "/usr/bin/lsb_release", []
 
     case lines do
-      "" -> %Facts.Host.LSB{ id: "", release: "", codename: "", description: "" }
+      "" -> %Facts.Host.LSB{id: "", release: "", codename: "", description: ""}
       _ ->
-        ret = String.split(lines, "\n")
-              |> Enum.filter(& !(String.length(&1) == 0))
-              |> Enum.map(& String.replace(&1, "\"", ""))
-              |> Enum.map(& String.split(&1, ":"))
-              |> Enum.map(fn (x) -> {
-                    String.to_atom(hd(x)), Enum.fetch!(tl(x), 0)
-                  } end )
+        ret =
+          lines
+            |> String.split("\n")
+            |> Enum.filter(& !(String.length(&1) == 0))
+            |> Enum.map(& String.replace(&1, "\"", ""))
+            |> Enum.map(& String.split(&1, ":"))
+            |> Enum.map(fn (x) -> {
+                  String.to_atom(hd(x)), Enum.fetch!(tl(x), 0)
+                } end)
 
         %Facts.Host.LSB{
           id: ret[:distributor_id],
@@ -236,9 +240,9 @@ defmodule Facts.Host do
   end
 
   @spec kernel_version :: String.t
-  defp kernel_version() do
+  defp kernel_version do
     filename = host_proc("/sys/kernel/osrelease")
-    contents = if File.exists?(filename), do: hd(read_file(filename)), else: ""
+    contents = if File.exists?(filename), do: hd(read_file(filename, sane: true)), else: ""
 
     contents
   end
@@ -268,7 +272,7 @@ defmodule Facts.Host do
   defp get_platform(data, opts \\ [type: "redhat"]) do
     data = String.downcase(data)
     platform = case opts[:type] do
-      "redhat" -> if String.contains?(data, "red hat"), do: "redhat", else: String.splitter(data, [" "], trim: true) |> Enum.take(1)
+      "redhat" -> if String.contains?(data, "red hat"), do: "redhat", else: data |> String.splitter([" "], trim: true) |> Enum.take(1)
       "suse" -> if String.contains?(data, "opensuse"), do: "opensuse", else: "suse"
     end
 
@@ -292,8 +296,8 @@ defmodule Facts.Host do
     end
   end
 
-  @spec virtualization :: { String.t, String.t }
-  defp virtualization() do
+  @spec virtualization :: {String.t, String.t}
+  defp virtualization do
     xen_file = host_proc("xen")
     modules_file = host_proc("modules")
     cpu_file = host_proc("cpuinfo")
@@ -307,7 +311,7 @@ defmodule Facts.Host do
       File.exists?(xen_file) ->
         role =
           if File.exists?(xen_file <> "/capabilities") do
-            contents = Facts.Utils.read_file( xen_file <> "/capabilities", sane: false)
+            contents = read_file(xen_file <> "/capabilities")
             case String.contains?(contents, "control_d") do
               true -> "host"
               _ -> "guest"
@@ -319,35 +323,35 @@ defmodule Facts.Host do
         {"xen", role}
 
       File.exists?(modules_file) ->
-        contents = Facts.Utils.read_file(modules_file, sane: false)
+        contents = read_file(modules_file)
         cond do
-          String.contains?(contents, "kvm") -> { "kvm", "host" }
-          String.contains?(contents, "vboxdrv") -> { "vbox", "host" }
-          String.contains?(contents, "vboxguest") -> { "vbox", "guest" }
+          String.contains?(contents, "kvm") -> {"kvm", "host"}
+          String.contains?(contents, "vboxdrv") -> {"vbox", "host"}
+          String.contains?(contents, "vboxguest") -> {"vbox", "guest"}
         end
 
       File.exists?(cpu_file) ->
-        contents = Facts.Utils.read_file(cpu_file, sane: false)
-        if String.contains?(contents, ["QEMU Virtual CPU", "Common KVM processor", "Common 32-bit KVM processor"] ) do
-          { "kvm", "guest"}
+        contents = read_file(cpu_file)
+        if String.contains?(contents, ["QEMU Virtual CPU", "Common KVM processor", "Common 32-bit KVM processor"]) do
+          {"kvm", "guest"}
         end
-      File.exists?(bc_file) -> { "openvz", "host"}
-      File.exists?(vz_file) -> { "openvz", "guest"}
-      File.exists?(status_file ) ->
-        contents = Facts.Utils.read_file(status_file, sane: false)
+      File.exists?(bc_file) -> {"openvz", "host"}
+      File.exists?(vz_file) -> {"openvz", "guest"}
+      File.exists?(status_file) ->
+        contents = read_file(status_file)
         if String.contains?(contents, ["s_context:", "VxID:"]), do: {"linux-server", ""}
       File.exists?(cgroup_file) ->
-        contents = Facts.Utils.read_file(cgroup_file, sane: false)
+        contents = read_file(cgroup_file)
         cond do
-          String.contains?(contents, "lxc") -> { "lxc", "guest" }
-          String.contains?(contents, "docker") -> { "docker", "guest" }
-          String.contains?(contents, "machine-rkt") -> { "rkt", "guest" }
+          String.contains?(contents, "lxc") -> {"lxc", "guest"}
+          String.contains?(contents, "docker") -> {"docker", "guest"}
+          String.contains?(contents, "machine-rkt") -> {"rkt", "guest"}
         end
-      File.exists?("/usr/bin/lxc-version") -> { "lxc", "host"}
+      File.exists?("/usr/bin/lxc-version") -> {"lxc", "host"}
       File.exists?(os_file) ->
-        { platform, _} = get_os_release()
+        {platform, _} = get_os_release()
         case platform do
-          "coreos" -> { "rkt", "host" }
+          "coreos" -> {"rkt", "host"}
           _ -> {"undertermined", "undertermined"}
         end
       true -> {"undertermined", "undertermined"}

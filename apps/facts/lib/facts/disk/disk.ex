@@ -12,7 +12,6 @@ defmodule Facts.Disk do
   """
   @spec partitions(boolean) :: tuple
   def partitions(all \\ true) do
-
     try do
       p = read_mtab()
         |> get_file_systems(all)
@@ -26,24 +25,28 @@ defmodule Facts.Disk do
   end
 
   @spec read_mtab :: list(list(String.t))
-  defp read_mtab() do
+  defp read_mtab do
     filename = host_etc("mtab")
-    lines = read_file(filename)
-            |> String.split("\n")
-            |> Enum.map(& String.split(&1))
-            |> Enum.map(& Enum.take(&1, 4))
-            |> Enum.filter(& !Enum.empty?(&1))
+    lines =
+      filename
+        |> read_file
+        |> String.split("\n")
+        |> Enum.map(& String.split(&1))
+        |> Enum.map(& Enum.take(&1, 4))
+        |> Enum.filter(& !Enum.empty?(&1))
     lines
   end
 
   @spec get_file_systems(mtab :: list, all :: boolean) :: list(String.t)
   defp get_file_systems(mtab, all) do
     filename = host_proc("filesystems")
-    fs = read_file(filename)
-            |> String.split("\n")
-            |> Enum.filter(& !(String.length(&1) == 0))
-            |> Enum.reject(& String.starts_with?(&1, "nodev"))
-            |> Enum.map(& String.trim_leading(&1, "\t"))
+    fs =
+      filename
+        |> read_file
+        |> String.split("\n")
+        |> Enum.filter(& !(String.length(&1) == 0))
+        |> Enum.reject(& String.starts_with?(&1, "nodev"))
+        |> Enum.map(& String.trim_leading(&1, "\t"))
 
     data =
       case all do
@@ -63,8 +66,4 @@ defmodule Facts.Disk do
       opts: Enum.fetch!(data, 3)
     }
   end
-#  @spec get_fs_type :: listy
-#  defp get_fs_type() do
-#
-#  end
 end
