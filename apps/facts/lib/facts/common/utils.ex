@@ -87,13 +87,14 @@ defmodule Facts.Utils do
 
   @spec normalize_with_underscore(tuple) :: tuple
   def normalize_with_underscore(item) when is_tuple(item) do
-    item
-      |> elem(0)
-      |> String.trim
-      |> String.downcase
-      |> String.replace(~r/\s+/, "_")
-      |> (&Tuple.insert_at({}, 0, &1)).()
-      |> Tuple.insert_at(1, elem(item, 1))
+    k =
+      item
+        |> elem(0)
+        |> String.trim
+        |> String.downcase
+        |> String.replace(~r/\s+/, "_")
+
+    {k, elem(item, 1)}
   end
 
   @spec normalize_with_underscore(binary) :: map
